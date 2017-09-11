@@ -1,0 +1,88 @@
+﻿using UnityEngine;
+using System.Collections;
+public class CompLider : MonoBehaviour {
+
+	    public GameObject player1;
+    
+    public static int TIEMPO_MAX_ACCION=11;
+    
+    public int vidas=3;
+
+	public GameObject shot;
+    public GameObject satk;
+    public Transform shotSpawn;
+    
+    public Transform ownPos;
+    public Vector2 searchDestroy;
+    public Rigidbody2D rb2D;
+    
+    public int lvl =2;
+    float timerAtk=0, agressive=0;
+    bool shoot=false, search=false, special=false;
+    
+    
+	// Use this for initialization
+    
+	void Start () {
+
+		rb2D = GetComponent<Rigidbody2D>();
+        ownPos=GetComponent<Transform>();
+        player1=GameObject.FindGameObjectsWithTag("Player")[0];
+	}
+	
+	// Update is called once per frame
+	void Update () {
+        if(Time.time-timerAtk>(TIEMPO_MAX_ACCION-lvl)){
+            timerAtk=Time.time;
+            agressive=Random.value*12;
+
+            if(agressive<3){
+                shoot=false;
+                search=false;
+		special=false;
+            }else if(agressive<6){
+                shoot=true;
+                search=false;
+		special=false;
+            }else if(agressive<9){
+                shoot=false;
+                search=true;
+		special=true;
+            }else if(agressive==12){
+                shoot=true;
+                search=true;
+		special=true;
+            }
+            act(shoot,search,special);
+        }
+        
+        
+	}
+    
+    void act(bool shoot, bool search, bool special){
+        if(shoot){
+            Instantiate(shot, shotSpawn.position, Quaternion.identity);
+        }
+        if(search){
+            searchDestroy=new Vector2(3*(player1.transform.position.x-ownPos.position.x),-10);
+            //rb2D.AddForce(Vector2.down, ForceMode2D.Impulse);
+            rb2D.AddForce(searchDestroy, ForceMode2D.Impulse);
+            //Debug.Log(""+(player1.transform.position.x-ownPos.position.x));
+        }
+	if(special){
+		Instantiate(satk, shotSpawn.position, Quaternion.identity);
+	}
+    }
+
+    void OnCollisionEnter2D(Collision2D coll) {
+        if (coll.gameObject.tag=="disparo"){
+            vidas--;    
+			Destroy(coll.gameObject,0.0f);
+        }
+		if (vidas <= 0) {
+
+			Application.LoadLevel ("Final"); 
+		}
+        
+    }
+}
